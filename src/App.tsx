@@ -1,24 +1,91 @@
-import React from 'react';
-import logo from './logo.svg';
+import { ColDef, ColGroupDef } from 'ag-grid-community';
 import './App.css';
+import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
+
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+
+interface IRow {
+  make: string;
+  model: string;
+  price: number;
+}
+
+const handleJsonCopy = (value: string) => {
+  navigator.clipboard
+    .writeText(value)
+    .then(() => {
+      window.alert('Content copied: ' + value);
+    })
+    .catch((error) => {
+      window.alert('Failed to copy. logged error to console');
+      console.log(error);
+    });
+};
+
+const simpleComp: React.FC<CustomCellRendererProps> = ({ value }) => {
+  return (
+    <div>
+      <span>{value}</span>
+      <span className="copy-to-clipboard" onClick={() => handleJsonCopy(value)}>
+        <img style={{ width: 15, cursor: 'pointer' }} src="./copy.svg" />
+      </span>{' '}
+    </div>
+  );
+};
 
 function App() {
+  const gridRef = useRef();
+
+  const [rowData, setRowData] = useState<IRow[]>([]);
+
+  const columnDefs: ColDef<IRow>[] | ColGroupDef<IRow>[] = [
+    {
+      headerName: 'Car Search',
+      children: [
+        { field: 'make', cellRenderer: simpleComp },
+        { field: 'model', checkboxSelection: true },
+        {
+          field: 'price',
+          valueFormatter: (params) => {
+            return '$' + params.value.toLocaleString();
+          },
+        },
+      ],
+    },
+  ];
+
+  const defaultColDefs = useMemo(
+    () => ({
+      sortable: true,
+      filter: true,
+      editable: true,
+      floatingFilter: true,
+    }),
+    []
+  );
+
+  useEffect(() => {
+    fetch('https://www.ag-grid.com/example-assets/row-data.json')
+      .then((result) => result.json())
+      .then((rowData) => setRowData(rowData));
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="ag-theme-alpine" style={{ height: 500 }}>
+      <AgGridReact
+        rowData={rowData}
+        columnDefs={columnDefs}
+        defaultColDef={defaultColDefs}
+        onCellValueChanged={(event) =>
+          console.log(`New Cell Value: ${event.value}`)
+        }
+        onSelectionChanged={(e) => console.log(`row is changed`)}
+        rowSelection="multiple"
+        animateRows={true}
+        pagination={true}
+      />
     </div>
   );
 }
