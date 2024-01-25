@@ -29,14 +29,38 @@ const simpleComp: React.FC<CustomCellRendererProps> = ({ value }) => {
     <div>
       <span>{value}</span>
       <span className="copy-to-clipboard" onClick={() => handleJsonCopy(value)}>
-        <img style={{ width: 15, cursor: 'pointer' }} src="./copy.svg" />
+        <img
+          style={{ width: 15, cursor: 'pointer' }}
+          alt="Copy to Clipboard"
+          src="./copy.svg"
+        />
       </span>{' '}
     </div>
   );
 };
 
+const updateButtonHandler = (): void => {
+  window.alert('click worked');
+};
+
+const updateButton: React.FC<CustomCellRendererProps> = (props) => {
+  const updateButtonHandler = () => {
+    const newPrice = Math.floor(Math.random() * 100000);
+    props.node.setDataValue('price', newPrice);
+  };
+
+  return (
+    <div>
+      <span>{props.value}</span>
+      <button className="updateBtn" onClick={updateButtonHandler}>
+        Update
+      </button>
+    </div>
+  );
+};
+
 function App() {
-  const gridRef = useRef();
+  // const gridRef = useRef<AgGridReact>(null);
 
   const [rowData, setRowData] = useState<IRow[]>([]);
 
@@ -45,12 +69,16 @@ function App() {
       headerName: 'Car Search',
       children: [
         { field: 'make', cellRenderer: simpleComp },
-        { field: 'model', checkboxSelection: true },
+        { field: 'model' },
+        // {
+        //   field: 'price',
+        //   valueFormatter: (params) => {
+        //     return '$' + params.value.toLocaleString();
+        //   },
         {
           field: 'price',
-          valueFormatter: (params) => {
-            return '$' + params.value.toLocaleString();
-          },
+          editable: true,
+          cellRenderer: updateButton,
         },
       ],
     },
@@ -60,7 +88,7 @@ function App() {
     () => ({
       sortable: true,
       filter: true,
-      editable: true,
+      // editable: true,
       floatingFilter: true,
     }),
     []
