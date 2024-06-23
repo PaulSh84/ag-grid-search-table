@@ -44,16 +44,20 @@ const updateButtonHandler = (): void => {
 };
 
 const updateButton: React.FC<CustomCellRendererProps> = (props) => {
+  
   const updateButtonHandler = () => {
     const newPrice = Math.floor(Math.random() * 100000);
     props.node.setDataValue('price', newPrice);
   };
 
+  const updateButtonOrNoUpdateButton = () => {}
+
+
   return (
     <div>
       <span>{props.value}</span>
       <button className="updateBtn" onClick={updateButtonHandler}>
-        Update
+        CAI Update
       </button>
     </div>
   );
